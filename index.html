@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FallPod · sovereign data pod</title>
+<meta name="description" content="One unified store for every estate tool. Path-based · FallID-owned · lives on your device.">
+<meta name="author" content="AI-Native Solutions">
+<meta name="theme-color" content="#1a1a1e">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%231a1a1e'/%3E%3Ctext x='16' y='22' font-family='serif' font-size='18' fill='%237a9c7e' text-anchor='middle'%3E%E2%97%8A%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--void:#1a1a1e;--deep:#212127;--surface:#2a2a30;--raised:#33333a;--line:rgba(232,228,219,0.08);--line2:rgba(232,228,219,0.16);--text:#e8e4db;--muted:#928d80;--dim:#6b6660;--sage:#7a9c7e;--sage-dim:rgba(122,156,126,0.14);--amber:#d4a052;--amber-dim:rgba(212,160,82,0.12);--coral:#d67a5a;--coral-glow:rgba(214,122,90,0.15);--serif:'Cormorant Garamond','Iowan Old Style',Georgia,serif;--sans:'Inter',-apple-system,system-ui,sans-serif;--mono:'JetBrains Mono','IBM Plex Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:var(--void);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;outline:none}
+input,textarea{font-family:inherit;background:transparent;color:var(--text);border:none;outline:none;width:100%}
+h1,h2,h3{font-family:var(--serif);font-weight:400;line-height:1.2}
+h1{font-size:32px;letter-spacing:0.01em}
+h1 em{color:var(--sage);font-style:italic}
+h2{font-size:22px;margin-bottom:12px}
+h3{font-size:13px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.14em;font-family:var(--mono);font-weight:500}
+.topbar{background:rgba(26,26,30,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:16px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:24px}
+.brand .glyph{color:var(--sage);font-size:24px}
+.brand .co{color:var(--dim);font-family:var(--mono);font-size:9.5px;letter-spacing:0.16em;margin-left:6px;text-transform:uppercase}
+.did-pill{background:var(--surface);border:1px solid var(--line);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--muted);max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.did-pill strong{color:var(--sage)}
+.tabs{display:flex;gap:4px;padding:12px 24px;border-bottom:1px solid var(--line);background:var(--deep);overflow-x:auto}
+.tab{background:transparent;color:var(--muted);padding:8px 16px;border-radius:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;white-space:nowrap;transition:all .15s}
+.tab:hover{color:var(--text)}
+.tab.on{background:var(--sage-dim);color:var(--sage)}
+main{padding:24px;max-width:1200px;margin:0 auto}
+.view{display:none}
+.view.on{display:block}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:20px}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--deep);border:1px solid var(--line);border-radius:14px;padding:20px}
+.tree{max-height:70vh;overflow:auto;font-family:var(--mono);font-size:12.5px}
+.tree-node{padding:4px 6px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none}
+.tree-node:hover{background:var(--surface)}
+.tree-node.on{background:var(--sage-dim);color:var(--sage)}
+.tree-node.dir{color:var(--amber)}
+.tree-node .caret{width:12px;color:var(--muted);font-size:10px}
+.tree-node .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tree-node .size{color:var(--dim);font-size:10px}
+.tree-children{margin-left:14px;border-left:1px dashed var(--line)}
+.path-bar{background:var(--surface);padding:10px 14px;border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--sage);margin-bottom:14px;word-break:break-all}
+.editor textarea{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;font-family:var(--mono);font-size:12.5px;min-height:280px;resize:vertical;line-height:1.5}
+.editor .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.editor .meta div{background:var(--surface);padding:8px 12px;border-radius:6px}
+.editor .meta div strong{color:var(--text);display:block;font-size:10px;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:2px;color:var(--dim)}
+.btn-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.btn{background:var(--sage);color:var(--void);padding:10px 18px;border-radius:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700}
+.btn:hover{background:#8db091}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line2)}
+.btn.ghost:hover{border-color:var(--sage);color:var(--sage)}
+.btn.danger{background:var(--coral);color:var(--void)}
+.btn.danger:hover{background:#e28a6a}
+.new-form{display:grid;gap:10px;margin-top:16px}
+.new-form input,.new-form textarea{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:12.5px}
+.new-form textarea{min-height:100px;resize:vertical}
+.new-form label{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em}
+.new-form input[type=checkbox]{width:auto}
+.empty{padding:40px;text-align:center;color:var(--muted);font-family:var(--serif);font-style:italic;font-size:18px}
+.grants-list{display:flex;flex-direction:column;gap:10px}
+.grant-item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.grant-item .app{font-family:var(--mono);color:var(--sage);font-size:13px}
+.grant-item .patterns{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px}
+.grant-item .patterns code{background:var(--deep);padding:2px 6px;border-radius:4px;margin-right:4px}
+.grant-item .when{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:4px}
+.storage-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.stat .label{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:6px}
+.stat .val{font-family:var(--serif);font-size:28px;color:var(--sage);font-style:italic}
+.stat .sub{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:2px}
+.bar{background:var(--surface);border-radius:6px;height:8px;overflow:hidden;margin-top:4px}
+.bar-fill{height:100%;background:var(--sage);transition:width .3s}
+.breakdown{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.breakdown-row{display:grid;grid-template-columns:180px 1fr 80px;gap:12px;align-items:center;font-family:var(--mono);font-size:12px}
+.breakdown-row .p{color:var(--amber)}
+.breakdown-row .s{color:var(--muted);text-align:right;font-size:11px}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--sage);color:var(--void);padding:12px 20px;border-radius:8px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.14em;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.4);transform:translateY(200%);transition:transform .3s;z-index:200}
+.toast.on{transform:translateY(0)}
+.toast.err{background:var(--coral)}
+.perm-modal{position:fixed;inset:0;background:rgba(26,26,30,0.85);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.perm-modal.on{display:flex}
+.perm-box{background:var(--deep);border:1px solid var(--sage);border-radius:16px;padding:28px;max-width:520px;width:100%}
+.perm-box h2{color:var(--sage);margin-bottom:8px}
+.perm-box .app-req{font-family:var(--mono);color:var(--amber);font-size:14px;margin-bottom:12px}
+.perm-box .purpose{color:var(--text);margin-bottom:16px;font-style:italic}
+.perm-box ul{list-style:none;background:var(--surface);border-radius:8px;padding:12px 16px;margin-bottom:16px}
+.perm-box ul li{font-family:var(--mono);font-size:12px;color:var(--sage);padding:4px 0}
+.footer{text-align:center;padding:32px 24px;color:var(--dim);font-family:var(--mono);font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase}
+.footer a{color:var(--muted);text-decoration:none;margin:0 8px}
+.footer a:hover{color:var(--sage)}
+.hero{padding:24px 0 12px;text-align:center}
+.hero h1{margin-bottom:12px}
+.hero p{color:var(--muted);max-width:600px;margin:0 auto;font-size:15px}
+select{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--mono);font-size:12px;width:100%}
+.section-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<div class="topbar">
+  <div class="brand"><span class="glyph">&#9674;</span> FallPod <span class="co">AI-NATIVE SOLUTIONS</span></div>
+  <div class="did-pill" id="didPill"><strong>owner</strong> &nbsp;<span id="didText">loading&hellip;</span></div>
+</div>
+<div class="tabs">
+  <button class="tab on" data-view="explorer">Explorer</button>
+  <button class="tab" data-view="new">New key</button>
+  <button class="tab" data-view="grants">Grants</button>
+  <button class="tab" data-view="storage">Storage</button>
+  <button class="tab" data-view="io">Export / Import</button>
+  <button class="tab" data-view="about">About</button>
+</div>
+<main>
+  <div class="hero">
+    <h1>One <em>unified</em> store. Path-based. Yours.</h1>
+    <p>Every estate tool reads from and writes to this pod. Like Solid, but sovereign — no server, no rental. Runs entirely in your browser, keyed to your FallID.</p>
+  </div>
+
+  <div class="view on" id="v-explorer">
+    <div class="grid">
+      <div class="card">
+        <div class="section-hdr"><h3>Pod tree</h3><button class="btn ghost" id="refreshTree">Refresh</button></div>
+        <div class="tree" id="tree"></div>
+      </div>
+      <div class="card" id="viewer">
+        <div class="empty">Select a key to view or edit its value.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="v-new">
+    <div class="card">
+      <h2>New key</h2>
+      <div class="new-form">
+        <label>Path (e.g. <code>/bloom/current</code> or <code>/mirror/sessions/2026-07-06</code>)</label>
+        <input id="newPath" placeholder="/apps/my-tool/state">
+        <label>Value (JSON, text, or plain string)</label>
+        <textarea id="newVal" placeholder='{"hello":"world"}'></textarea>
+        <label><input type="checkbox" id="newEnc" checked> Encrypt at rest (AES-GCM)</label>
+        <label><input type="checkbox" id="newSig"> Sign with FallID</label>
+        <div class="btn-row">
+          <button class="btn" id="putBtn">Write to pod</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="v-grants">
+    <div class="card">
+      <div class="section-hdr"><h2>App grants</h2></div>
+      <p style="color:var(--muted);margin-bottom:20px">Apps that have been granted access to specific paths in your pod. Revoke any at any time.</p>
+      <div class="new-form">
+        <label>Grant new app access</label>
+        <input id="grantApp" placeholder="app-id (e.g. fallmirror)">
+        <input id="grantPatterns" placeholder="/mirror/**, /shared/journal/*">
+        <div class="btn-row"><button class="btn" id="grantBtn">Grant access</button></div>
+      </div>
+      <div style="margin-top:24px" class="grants-list" id="grantsList"></div>
+    </div>
+  </div>
+
+  <div class="view" id="v-storage">
+    <div class="card">
+      <div class="section-hdr"><h2>Storage</h2><button class="btn ghost" id="gcBtn">Run GC</button></div>
+      <div class="storage-stats" id="stats"></div>
+      <h3>Breakdown by top-level path</h3>
+      <div class="breakdown" id="breakdown"></div>
+    </div>
+  </div>
+
+  <div class="view" id="v-io">
+    <div class="card">
+      <h2>Export</h2>
+      <p style="color:var(--muted);margin-bottom:14px">Download a full snapshot of your pod as a JSON blob. Encrypted values remain encrypted.</p>
+      <div class="btn-row"><button class="btn" id="exportBtn">Download pod.json</button></div>
+      <h2 style="margin-top:32px">Import</h2>
+      <p style="color:var(--muted);margin-bottom:14px">Merge or replace with a previously exported blob.</p>
+      <div class="new-form">
+        <input type="file" id="importFile" accept=".json,application/json" style="padding:8px;background:var(--surface);border:1px solid var(--line);border-radius:8px">
+        <label>Mode
+          <select id="importMode" style="max-width:200px">
+            <option value="merge">Merge (keep existing)</option>
+            <option value="replace">Replace (wipe first)</option>
+          </select>
+        </label>
+        <div class="btn-row"><button class="btn" id="importBtn">Import</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="v-about">
+    <div class="card">
+      <h2>What is FallPod?</h2>
+      <p style="margin-bottom:14px">A sovereign data pod inspired by Tim Berners-Lee's <a href="https://solidproject.org" target="_blank" style="color:var(--sage)">Solid</a>. One unified path-based store that every estate tool — FallMirror, Bloom, FallBrief, whatever comes next — reads from and writes to. No per-tool silos.</p>
+      <p style="margin-bottom:14px"><strong style="color:var(--sage)">Namespace:</strong> filesystem-style paths like <code>/bloom/current</code>, <code>/mirror/sessions/2026-07-06</code>, <code>/signatures/</code>.</p>
+      <p style="margin-bottom:14px"><strong style="color:var(--sage)">Auth:</strong> keyed to your <a href="https://sjgant80-hub.github.io/fallid/" target="_blank" style="color:var(--sage)">FallID</a> DID. Encryption derived from your identity.</p>
+      <p style="margin-bottom:14px"><strong style="color:var(--sage)">Backing:</strong> OPFS for large blobs (Chrome/Edge), IndexedDB for everything else. Optional <a href="https://sjgant80-hub.github.io/fallstore/" target="_blank" style="color:var(--sage)">FallStore</a> CID references for content-addressed blobs.</p>
+      <p style="margin-bottom:14px"><strong style="color:var(--sage)">Grants:</strong> apps request access to path patterns. You approve. You revoke.</p>
+      <h3 style="margin-top:24px">Library usage</h3>
+      <pre style="background:var(--surface);padding:16px;border-radius:8px;font-family:var(--mono);font-size:12px;overflow:auto;color:var(--text);line-height:1.6">import { openPod } from 'https://sjgant80-hub.github.io/fallpod/fallpod.js';
+
+const pod = await openPod({ ownerDid: myFallID.did });
+
+await pod.put('/bloom/current', { streak: 47, last: Date.now() });
+const cur = await pod.get('/bloom/current');
+
+await pod.grant('fallmirror', ['/mirror/**']);
+pod.subscribe('/bloom/', evt =&gt; console.log('bloom changed', evt));</pre>
+    </div>
+  </div>
+</main>
+<div class="footer">
+  <a href="https://github.com/sjgant80-hub/fallpod">github</a> &middot;
+  <a href="https://sjgant80-hub.github.io/fallid/">fallid</a> &middot;
+  <a href="https://sjgant80-hub.github.io/fallstore/">fallstore</a> &middot;
+  <a href="https://ai-nativesolutions.com">ai-native solutions</a>
+</div>
+<div class="toast" id="toast"></div>
+<div class="perm-modal" id="permModal">
+  <div class="perm-box">
+    <h2>Access request</h2>
+    <div class="app-req" id="permApp"></div>
+    <div class="purpose" id="permPurpose"></div>
+    <ul id="permPatterns"></ul>
+    <div class="btn-row">
+      <button class="btn" id="permAllow">Allow</button>
+      <button class="btn ghost" id="permDeny">Deny</button>
+    </div>
+  </div>
+</div>
+<script type="module">
+import { openPod } from './fallpod.js';
+
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+// ─── FallID load (soft) ─────────────────────────────────
+let ownerDid = 'did:fallid:local:' + (localStorage.getItem('fallpod-anon') || (() => {
+  const id = 'anon-' + crypto.randomUUID().slice(0,8);
+  localStorage.setItem('fallpod-anon', id);
+  return id;
+})());
+
+try {
+  const mod = await import('https://sjgant80-hub.github.io/fallid/fallid.js').catch(() => null);
+  if (mod?.FallID) {
+    const fid = await new mod.FallID().ready();
+    if (fid.did) { ownerDid = fid.did; window.FallID = fid; }
+  }
+} catch {}
+
+$('#didText').textContent = ownerDid;
+
+const pod = await openPod({ ownerDid });
+window.__pod = pod;
+
+// ─── tabs ────────────────────────────────────────────────
+$$('.tab').forEach(t => t.onclick = () => {
+  $$('.tab').forEach(x => x.classList.remove('on'));
+  $$('.view').forEach(x => x.classList.remove('on'));
+  t.classList.add('on');
+  $('#v-' + t.dataset.view).classList.add('on');
+  if (t.dataset.view === 'grants') renderGrants();
+  if (t.dataset.view === 'storage') renderStorage();
+});
+
+// ─── toast ──────────────────────────────────────────────
+function toast(msg, err) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.toggle('err', !!err);
+  t.classList.add('on');
+  setTimeout(() => t.classList.remove('on'), 2400);
+}
+
+// ─── tree render ────────────────────────────────────────
+let selected = null;
+
+function buildTreeData(paths) {
+  const root = { name: '/', children: {}, isDir: true, path: '/' };
+  for (const p of paths) {
+    const parts = p.split('/').filter(Boolean);
+    let cur = root;
+    for (let i = 0; i < parts.length; i++) {
+      const isLeaf = i === parts.length - 1;
+      const name = parts[i];
+      if (!cur.children[name]) {
+        cur.children[name] = { name, children: {}, isDir: !isLeaf, path: '/' + parts.slice(0, i+1).join('/') };
+      }
+      if (!isLeaf) cur.children[name].isDir = true;
+      cur = cur.children[name];
+    }
+  }
+  return root;
+}
+
+function renderTreeNode(node, depth) {
+  const kids = Object.values(node.children).sort((a,b) => {
+    if (a.isDir !== b.isDir) return a.isDir ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
+  return kids.map(k => {
+    const isSel = selected === k.path && !k.isDir;
+    const html = `<div class="tree-node ${k.isDir ? 'dir' : ''} ${isSel ? 'on' : ''}" data-path="${k.path}" data-dir="${k.isDir}">
+      <span class="caret">${k.isDir ? '▸' : ' '}</span>
+      <span class="name">${k.name}</span>
+    </div>`;
+    const child = Object.keys(k.children).length ? `<div class="tree-children">${renderTreeNode(k, depth+1)}</div>` : '';
+    return html + child;
+  }).join('');
+}
+
+async function renderTree() {
+  const paths = await pod.list('/');
+  const visible = paths.filter(p => !p.startsWith('/.'));
+  const tree = buildTreeData(visible);
+  const el = $('#tree');
+  el.innerHTML = renderTreeNode(tree, 0) || '<div class="empty" style="font-size:14px;padding:20px">Empty pod. Add a key on the New tab.</div>';
+  el.querySelectorAll('.tree-node').forEach(n => {
+    n.onclick = (e) => {
+      e.stopPropagation();
+      if (n.dataset.dir === 'true') return;
+      selected = n.dataset.path;
+      renderViewer(selected);
+      renderTree();
+    };
+  });
+}
+
+async function renderViewer(path) {
+  const v = $('#viewer');
+  const rec = await pod.meta(path);
+  if (!rec) { v.innerHTML = '<div class="empty">Key not found.</div>'; return; }
+  const val = await pod.get(path);
+  let displayVal = '';
+  if (rec.type === 'json') displayVal = JSON.stringify(val, null, 2);
+  else if (rec.type === 'text') displayVal = val;
+  else displayVal = '(binary · ' + rec.size + ' bytes)';
+
+  v.innerHTML = `
+    <div class="path-bar">${path}</div>
+    <div class="editor">
+      <textarea id="editVal" ${rec.type === 'binary' ? 'readonly' : ''}>${escapeHtml(displayVal)}</textarea>
+      <div class="meta">
+        <div><strong>type</strong>${rec.type}</div>
+        <div><strong>size</strong>${rec.size} bytes</div>
+        <div><strong>encrypted</strong>${rec.encrypted ? 'yes' : 'no'}</div>
+        <div><strong>signed</strong>${rec.signed ? 'yes' : 'no'}</div>
+        <div><strong>backend</strong>${rec.backend}</div>
+        <div><strong>modified</strong>${new Date(rec.modified).toLocaleString()}</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="saveBtn">Save</button>
+        <button class="btn ghost" id="copyBtn">Copy value</button>
+        <button class="btn danger" id="delBtn">Delete key</button>
+      </div>
+    </div>
+  `;
+  $('#saveBtn').onclick = async () => {
+    const raw = $('#editVal').value;
+    let toWrite = raw;
+    if (rec.type === 'json') { try { toWrite = JSON.parse(raw); } catch(e) { toast('bad JSON', true); return; } }
+    await pod.put(path, toWrite, { encrypt: rec.encrypted, sign: rec.signed });
+    toast('saved');
+    renderTree();
+    renderViewer(path);
+  };
+  $('#copyBtn').onclick = () => { navigator.clipboard.writeText($('#editVal').value); toast('copied'); };
+  $('#delBtn').onclick = async () => {
+    if (!confirm('Delete ' + path + '?')) return;
+    await pod.delete(path);
+    selected = null;
+    $('#viewer').innerHTML = '<div class="empty">Select a key.</div>';
+    renderTree();
+    toast('deleted');
+  };
+}
+
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+$('#refreshTree').onclick = () => renderTree();
+
+// ─── new key ────────────────────────────────────────────
+$('#putBtn').onclick = async () => {
+  const path = $('#newPath').value.trim();
+  const raw = $('#newVal').value;
+  if (!path) { toast('need path', true); return; }
+  let val = raw;
+  try { val = JSON.parse(raw); } catch { /* keep as string */ }
+  try {
+    await pod.put(path, val, { encrypt: $('#newEnc').checked, sign: $('#newSig').checked });
+    toast('wrote ' + path);
+    $('#newPath').value = ''; $('#newVal').value = '';
+    renderTree();
+  } catch(e) { toast(e.message, true); }
+};
+
+// ─── grants ─────────────────────────────────────────────
+async function renderGrants() {
+  const gs = await pod.grants();
+  const el = $('#grantsList');
+  if (!gs.length) { el.innerHTML = '<div class="empty" style="font-size:14px">No apps have access yet.</div>'; return; }
+  el.innerHTML = gs.map(g => `
+    <div class="grant-item">
+      <div>
+        <div class="app">${g.appId}</div>
+        <div class="patterns">${g.patterns.map(p => `<code>${escapeHtml(p)}</code>`).join('')}</div>
+        <div class="when">granted ${new Date(g.granted).toLocaleString()}</div>
+      </div>
+      <button class="btn danger" data-app="${g.appId}">Revoke</button>
+    </div>
+  `).join('');
+  el.querySelectorAll('button[data-app]').forEach(b => b.onclick = async () => {
+    await pod.revoke(b.dataset.app); toast('revoked'); renderGrants();
+  });
+}
+$('#grantBtn').onclick = async () => {
+  const app = $('#grantApp').value.trim();
+  const patterns = $('#grantPatterns').value.split(',').map(s => s.trim()).filter(Boolean);
+  if (!app || !patterns.length) { toast('need app + patterns', true); return; }
+  await pod.grant(app, patterns);
+  toast('granted');
+  $('#grantApp').value = ''; $('#grantPatterns').value = '';
+  renderGrants();
+};
+
+// ─── storage ────────────────────────────────────────────
+async function renderStorage() {
+  const s = await pod.stats();
+  const kb = n => (n / 1024).toFixed(1) + ' KB';
+  $('#stats').innerHTML = `
+    <div class="stat"><div class="label">Total size</div><div class="val">${kb(s.total)}</div><div class="sub">${s.total} bytes</div></div>
+    <div class="stat"><div class="label">Live keys</div><div class="val">${s.live}</div></div>
+    <div class="stat"><div class="label">Tombstones</div><div class="val">${s.tombstones}</div><div class="sub">deleted, awaiting GC</div></div>
+  `;
+  const entries = Object.entries(s.byTop).sort((a,b) => b[1] - a[1]);
+  const max = Math.max(...entries.map(e => e[1]), 1);
+  $('#breakdown').innerHTML = entries.map(([p, sz]) => `
+    <div class="breakdown-row">
+      <div class="p">${p || '/'}</div>
+      <div class="bar"><div class="bar-fill" style="width:${(sz/max*100).toFixed(1)}%"></div></div>
+      <div class="s">${kb(sz)}</div>
+    </div>
+  `).join('') || '<div class="empty" style="font-size:14px">Nothing yet.</div>';
+}
+$('#gcBtn').onclick = async () => { const r = await pod.gc(); toast('collected ' + r.collected); renderStorage(); };
+
+// ─── io ─────────────────────────────────────────────────
+$('#exportBtn').onclick = async () => {
+  const blob = await pod.export();
+  const b = new Blob([JSON.stringify(blob, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(b);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'fallpod-' + Date.now() + '.json';
+  a.click(); URL.revokeObjectURL(url);
+  toast('exported');
+};
+$('#importBtn').onclick = async () => {
+  const f = $('#importFile').files[0];
+  if (!f) { toast('pick a file', true); return; }
+  const txt = await f.text();
+  try {
+    const r = await pod.import(txt, { mode: $('#importMode').value });
+    toast('imported ' + r.imported);
+    renderTree();
+  } catch(e) { toast(e.message, true); }
+};
+
+// ─── access-request modal ───────────────────────────────
+window.addEventListener('fallpod:access-request', (e) => {
+  const { appId, patterns, purpose } = e.detail;
+  $('#permApp').textContent = appId || 'unknown app';
+  $('#permPurpose').textContent = purpose || 'No purpose given.';
+  $('#permPatterns').innerHTML = patterns.map(p => `<li>${escapeHtml(p)}</li>`).join('');
+  $('#permModal').classList.add('on');
+  const done = (granted) => {
+    $('#permModal').classList.remove('on');
+    window.dispatchEvent(new CustomEvent('fallpod:access-response', { detail: { appId, granted } }));
+  };
+  $('#permAllow').onclick = () => done(true);
+  $('#permDeny').onclick = () => done(false);
+});
+
+// ─── boot ───────────────────────────────────────────────
+window.addEventListener('fallpod:change', () => { renderTree(); });
+renderTree();
+
+// service worker
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</html>
